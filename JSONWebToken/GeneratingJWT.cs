@@ -9,6 +9,8 @@ using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
 using JSONWebToken.Signature;
 using System.Text;
+using System.Security.Claims;
+using System.Reflection;
 
 namespace JSONWebToken
 {
@@ -16,7 +18,7 @@ namespace JSONWebToken
     {
         // User user = new User { UserName = "user", App = "app", Device = "device" };
 
-        private string GenerateJSON(User user)
+        public string GenerateJSON(User user)
         {
             string json = JsonConvert.SerializeObject(user);
             var payloadBytes = System.Text.Encoding.UTF8.GetBytes(json);
@@ -39,10 +41,22 @@ namespace JSONWebToken
             return jwt.ToString();
         }
 
-        public string GenerateJWT(User user)
+        public string GenerateJWTWithoutSignature(User user)
         {
-            //return GenerateToken(user);
-            return GenerateJSON(user);
+            var claims = user.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Select(prop => new Claim(prop.Name, prop.GetValue(user).ToString())).ToList();
+            JwtPayload payload = new JwtPayload(null, null, claims, DateTime.Now, DateTime.Now.AddMinutes(30));
+            //JwtPayload payload = new JwtPayload(null, null, claims, DateTime.Now, DateTime.Now.AddSeconds(30));
+            JwtSecurityToken jwt = new JwtSecurityToken(new JwtHeader(), payload);
+            return (new JwtSecurityTokenHandler()).WriteToken(jwt);
+        }
+
+        public string GenerateJWTWithSignature(User user)
+        {
+            var claims = user.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Select(prop => new Claim(prop.Name, prop.GetValue(user).ToString())).ToList();
+            var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(KeyGeneration.hmac.Key), KeyGeneration.GetAlgorithm());
+            //signingCredentials.CryptoProviderFactory = new CryptoProviderFactory();
+            JwtSecurityToken jwt = new JwtSecurityToken(claims: claims, notBefore: DateTime.Now, expires: DateTime.Now.AddSeconds(30), signingCredentials: signingCredentials );
+            return (new JwtSecurityTokenHandler()).WriteToken(jwt);
         }
     }
 }
