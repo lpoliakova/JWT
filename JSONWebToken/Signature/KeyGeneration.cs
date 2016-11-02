@@ -24,7 +24,7 @@ namespace JSONWebToken.Signature
 
         public static string GetAlgorithm()
         {
-            return "HMACSHA256";
+            return "HS256";
         }
 
     }
