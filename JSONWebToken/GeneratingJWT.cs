@@ -6,7 +6,7 @@ using JSONWebToken.Models;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
-using System.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Tokens;
 using JSONWebToken.Signature;
 using System.Text;
 
