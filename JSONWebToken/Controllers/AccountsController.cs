@@ -8,18 +8,41 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using JSONWebToken.Models;
 using JSONWebToken.Signature;
-using System.Text;
+using JSONWebToken.Tokens;
 
 namespace JSONWebToken.Controllers
 {
     [RoutePrefix("api/account")]
     public class AccountsController : ApiController
     {
+        [Route("symmetricToken")]
+        public IHttpActionResult GetSymmetricToken()
+        {
+            string name = Request.Headers.GetValues("UserName").First();
+            Token token = new SymmetricToken(name, "app", "platform", "device");
+            return Ok(token.ToString());
+        }
+
+        [Route("parsedToken")]
+        public IHttpActionResult GetParsedToken()
+        {
+            try
+            {
+                string encodedJWT = Request.Headers.GetValues("JWT").First();
+                JwtSecurityToken decodedJWT = (new SymmetricToken()).GetJWT(encodedJWT);
+                return Ok(decodedJWT);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
 
         private JwtSecurityToken ValidateToken(JwtSecurityTokenHandler tokenHandler, string jwt)
         {
             SecurityToken token;
-            var signingCredentials = new SymmetricSecurityKey(KeyGeneration.hmac.Key);
+            var signingCredentials = new SymmetricSecurityKey(KeyGeneration.GetKey());
             TokenValidationParameters validationParams = new TokenValidationParameters
             {
                 RequireExpirationTime = true,
@@ -28,7 +51,7 @@ namespace JSONWebToken.Controllers
                 RequireSignedTokens = true,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = signingCredentials,
-                CryptoProviderFactory = new CryptoProviderFactory(),
+                //CryptoProviderFactory = new CryptoProviderFactory(),
 
                 ValidateActor = false,
                 ValidateAudience = false,
@@ -49,7 +72,7 @@ namespace JSONWebToken.Controllers
             try
             {
                 decodedJWT = ValidateToken(tokenHandler, encodedJWT);
-                //decodedJWT = tokenHandler.ReadJwtToken(encodedJWT);
+                //decodedJWT = tokenHandler.ReadJwtToken(token);
             }
             catch (Exception e)
             {
