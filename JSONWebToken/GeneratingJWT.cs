@@ -18,20 +18,20 @@ namespace JSONWebToken
     {
         // User user = new User { UserName = "user", App = "app", Device = "device" };
 
-        public string GenerateJSON(User user)
-        {
-            string json = JsonConvert.SerializeObject(user);
-            var payloadBytes = System.Text.Encoding.UTF8.GetBytes(json);
-            string payloadBase64 =  System.Convert.ToBase64String(payloadBytes);
-            //Generate a public/private key pair.
-            //RSACryptoServiceProvider RSA = new RSACryptoServiceProvider();
-            //Save the public key information to an RSAParameters structure.
-            //RSAParameters RSAKeyInfo = RSA.ExportParameters(false);
+        //public string GenerateJSON(User user)
+        //{
+        //    string json = JsonConvert.SerializeObject(user);
+        //    var payloadBytes = System.Text.Encoding.UTF8.GetBytes(json);
+        //    string payloadBase64 =  System.Convert.ToBase64String(payloadBytes);
+        //    //Generate a public/private key pair.
+        //    //RSACryptoServiceProvider RSA = new RSACryptoServiceProvider();
+        //    //Save the public key information to an RSAParameters structure.
+        //    //RSAParameters RSAKeyInfo = RSA.ExportParameters(false);
 
-            var signitureBytes = KeyGeneration.hmac.ComputeHash(payloadBytes);
-            string signatureBase64 = System.Convert.ToBase64String(signitureBytes);
-            return "eyJ0eXAiOiJKV1QiLA0KICJhbGciOiJIUzI1NiJ9." + payloadBase64 + "." + signatureBase64;
-        }
+        //    var signitureBytes = KeyGeneration.hmac.ComputeHash(payloadBytes);
+        //    string signatureBase64 = System.Convert.ToBase64String(signitureBytes);
+        //    return "eyJ0eXAiOiJKV1QiLA0KICJhbGciOiJIUzI1NiJ9." + payloadBase64 + "." + signatureBase64;
+        //}
 
         private string GenerateToken(User user)
         {
@@ -53,7 +53,7 @@ namespace JSONWebToken
         public string GenerateJWTWithSignature(User user)
         {
             var claims = user.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Select(prop => new Claim(prop.Name, prop.GetValue(user).ToString())).ToList();
-            var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(KeyGeneration.hmac.Key), KeyGeneration.GetAlgorithm());
+            var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(KeyGeneration.GetKey()), KeyGeneration.GetAlgorithm());
             //signingCredentials.CryptoProviderFactory = new CryptoProviderFactory();
             JwtSecurityToken jwt = new JwtSecurityToken(claims: claims, notBefore: DateTime.Now, expires: DateTime.Now.AddSeconds(30), signingCredentials: signingCredentials );
             return (new JwtSecurityTokenHandler()).WriteToken(jwt);

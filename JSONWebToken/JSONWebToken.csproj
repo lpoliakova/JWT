@@ -173,10 +173,9 @@
     </Compile>
     <Compile Include="Models\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Providers\CustomJwtFormat.cs" />
-    <Compile Include="Providers\CustomOAuthProvider.cs" />
     <Compile Include="Signature\KeyGeneration.cs" />
-    <Compile Include="Startup.cs" />
+    <Compile Include="Tokens\SymmetricToken.cs" />
+    <Compile Include="Tokens\Token.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
